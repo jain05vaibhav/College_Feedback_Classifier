@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>College Review Classifier</title>
+  <style>
+    body { font-family: Arial; text-align: center; padding: 50px; }
+    textarea { width: 60%; height: 120px; }
+    button { padding: 10px 20px; margin-top: 10px; }
+    .result { margin-top: 20px; font-size: 20px; }
+  </style>
+</head>
+<body>
+  <h1>College Review Classifier</h1>
+  <textarea id="review" placeholder="Enter your review..."></textarea><br>
+  <button onclick="analyze()">Analyze</button>
+  <div class="result" id="result"></div>
+
+  <script>
+    async function analyze() {
+      const review = document.getElementById('review').value;
+      const res = await fetch('http://localhost:5000/predict', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ review })
+      });
+      const data = await res.json();
+      document.getElementById('result').innerText = 'Prediction: ' + data.prediction;
+    }
+  </script>
+</body>
+</html>
