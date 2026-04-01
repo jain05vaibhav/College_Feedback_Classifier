@@ -141,7 +141,9 @@ export default function StudentView() {
                       }}>
                         <div style={{
                           width: `${prob}%`, height: '100%',
-                          background: cat === result.category ? 'var(--accent)' : 'var(--border)',
+                          background: cat === result.category
+                            ? 'var(--accent)'
+                            : 'rgba(136,192,208,0.28)',
                           borderRadius: '99px', transition: 'width 0.6s ease'
                         }} />
                       </div>
