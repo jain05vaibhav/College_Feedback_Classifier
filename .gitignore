@@ -82,3 +82,15 @@ desktop.ini
 # ── Logs ─────────────────────────────────────────────────────
 *.log
 logs/
+
+# ── Old/Debug Scripts & Temp Files ────────────────────────────
+*.zip
+app.py
+app_combined.py
+final_app.py
+test_model.py
+diagnose_model.py
+train_local.py
+train_gpu.py
+repair_tokenizers.py
+streamlit_app.py
