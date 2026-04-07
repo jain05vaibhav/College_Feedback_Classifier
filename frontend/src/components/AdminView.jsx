@@ -3,11 +3,11 @@ import { useState, useEffect, useCallback } from 'react'
 const SENT_PILL = { Positive: 'pill-pos', Negative: 'pill-neg', Neutral: 'pill-neu' }
 
 const SORT_OPTIONS = [
+  { key: 'category', label: 'Category', icon: '↕' },
   { key: 'total',    label: 'Total',    icon: '↕' },
   { key: 'positive', label: 'Positive', icon: '↕' },
   { key: 'negative', label: 'Negative', icon: '↕' },
   { key: 'score',    label: 'Score',    icon: '↕' },
-  { key: 'category', label: 'Category', icon: '↕' },
 ]
 
 export default function AdminView() {
@@ -43,6 +43,13 @@ export default function AdminView() {
   async function deleteReview(id) {
     if (!confirm('Delete this review?')) return
     await fetch(`/api/reviews/${encodeURIComponent(id)}`, { method: 'DELETE' })
+    fetchData()
+  }
+
+  // rusticate a student
+  async function rusticateStudent(id) {
+    if (!confirm('Take action and rusticate this student?')) return
+    await fetch(`/api/reviews/${encodeURIComponent(id)}/rusticate`, { method: 'POST' })
     fetchData()
   }
 
@@ -120,14 +127,32 @@ export default function AdminView() {
             {t === 'leaderboard' ? '🏆 leaderboard' : '📝 reviews'}
           </div>
         ))}
-        <button
-          className="btn btn-ghost"
-          title="Refresh"
-          onClick={fetchData}
-          style={{ marginLeft: 'auto', fontSize: '0.78rem', padding: '0.3rem 0.7rem' }}
-        >
-          ↻ refresh
-        </button>
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.5rem' }}>
+          <button
+            className="btn btn-ghost"
+            title="Re-run AI classification on all existing reviews"
+            disabled={loading}
+            onClick={async () => {
+              if(!confirm('Re-classify all reviews using the current models? This may take a moment.')) return;
+              setLoading(true);
+              try {
+                await fetch('/api/reviews/reassess', { method: 'POST' });
+                await fetchData();
+              } catch(e) { console.error(e); setLoading(false); }
+            }}
+            style={{ fontSize: '0.78rem', padding: '0.3rem 0.7rem' }}
+          >
+            {loading ? '⚙...' : '🔄 reassess'}
+          </button>
+          <button
+            className="btn btn-ghost"
+            title="Refresh"
+            onClick={fetchData}
+            style={{ fontSize: '0.78rem', padding: '0.3rem 0.7rem' }}
+          >
+            ↻ refresh
+          </button>
+        </div>
       </div>
 
       {loading ? (
@@ -144,6 +169,7 @@ export default function AdminView() {
           filterCat={filterCat}  setFilterCat={setFilterCat}
           cats={cats}
           onDelete={deleteReview}
+          onRusticate={rusticateStudent}
         />
       )}
     </div>
@@ -218,7 +244,7 @@ function LeaderBoard({ data, sortKey, sortDir, onSort }) {
 }
 
 /* ── Reviews Feed sub-component ────────────────────── */
-function ReviewsFeed({ reviews, search, setSearch, filterSent, setFilterSent, filterCat, setFilterCat, cats, onDelete }) {
+function ReviewsFeed({ reviews, search, setSearch, filterSent, setFilterSent, filterCat, setFilterCat, cats, onDelete, onRusticate }) {
   return (
     <>
       {/* Filter bar */}
@@ -251,14 +277,21 @@ function ReviewsFeed({ reviews, search, setSearch, filterSent, setFilterSent, fi
           {reviews.map(r => (
             <div key={r.id} className="review-item">
               <div className="review-header">
-                <span className="review-author">@{r.author}</span>
+                <span className="review-author" style={{ textDecoration: r.rusticated ? 'line-through' : 'none', color: r.rusticated ? 'var(--negative)' : undefined }}>@{r.author}</span>
+                {r.rusticated && <span className="pill pill-neg" style={{marginLeft: '0'}}>BANNED</span>}
                 <span className={`pill pill-cat`}>{r.category}</span>
                 <span className={`pill ${r.sentiment === 'Positive' ? 'pill-pos' : r.sentiment === 'Negative' ? 'pill-neg' : 'pill-neu'}`}>
                   {r.sentiment}
                 </span>
-                <button className="review-delete" onClick={() => onDelete(r.id)} title="Delete review">
-                  ✕
-                </button>
+                
+                <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.5rem' }}>
+                  <button className="review-delete" onClick={() => onRusticate(r.id)} title={r.rusticated ? "Unban student" : "Rusticate student"}>
+                    🔨
+                  </button>
+                  <button className="review-delete" onClick={() => onDelete(r.id)} title="Delete review">
+                    ✕
+                  </button>
+                </div>
               </div>
               <div className="review-text">"{r.text}"</div>
               <div className="review-meta">

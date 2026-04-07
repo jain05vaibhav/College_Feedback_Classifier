@@ -45,6 +45,8 @@ runs/
 wandb/
 lightning_logs/
 *.ckpt
+*.pt
+checkpoint-*/
 
 # HuggingFace cache
 .cache/
