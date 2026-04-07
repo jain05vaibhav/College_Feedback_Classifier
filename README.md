@@ -14,8 +14,8 @@ Follow these 4 steps to get the app running:
 Make sure you have Node.js and Python 3.10+ installed.
 
 ```bash
-# Provide Python dependencies
-pip install fastapi uvicorn torch transformers pandas scikit-learn datasets
+# Install Python dependencies
+pip install -r requirements.txt
 
 # Install Frontend dependencies
 cd frontend
